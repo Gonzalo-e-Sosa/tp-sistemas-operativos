@@ -3,7 +3,7 @@ applyTo: '**'
 ---
 
 1. **Project Context**:
-   - Este proyecto corresponde a la asignatura **Sistemas Operativos** (Ingeniería en Informática, 2025, 2do Cuatrimestre).
+   - Este proyecto corresponde a la asignatura **Sistemas Operativos** (Ingeniería en Informática).
    - Los trabajos prácticos deben implementarse en **C**.
    - Se desarrollarán dos ejercicios principales:
      1. **Generador de Datos de Prueba con Procesos y Memoria Compartida**.
