@@ -1,0 +1,1 @@
+Usar signals para limpieza de recursos
