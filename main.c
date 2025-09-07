@@ -5,10 +5,14 @@
 #include <pthread.h>
 #include <time.h>
 
-#define NUM_THREADS 5
-#define RECORDS_PER_THREAD 20
-#define TOTAL_RECORDS (NUM_THREADS * RECORDS_PER_THREAD)
+#define NUM_THREADS 1000                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
+#define TOTAL_RECORDS (NUM_THREADS * RECORDS_PER_THREAD) // TODO: a modificarse por parametro
+#define RECORDS_PER_THREAD 20                            // TODO: a modificarse ya que es una division entre los parametros de entrada (Total de registros / Cantidad de procesos)
 #define PRODUCT_NAME_COUNT 5
+
+// TODO: a verse si se redondea la cantidad de registros a generar por cada proceso
+
+// TODO: definir si el proceso coordinador es o no un hilo
 
 typedef struct
 {
@@ -66,8 +70,10 @@ void sumar_anios(const char *fecha, int anos, char *dest)
     strftime(dest, 11, "%d-%m-%Y", &tm_fecha);
 }
 
+// TODO: A Modificarse IMPORTANTE
 void *generador(void *arg)
 {
+    // TODO: a modificarse para que el id sea generador por el proceso coordinador y NO por INDICE
     int thread_idx = *(int *)arg;
     int base = thread_idx * RECORDS_PER_THREAD;
     for (int i = 0; i < RECORDS_PER_THREAD; ++i)
@@ -109,8 +115,19 @@ void escribir_csv(const char *filename)
     fclose(f);
 }
 
-int main()
+// Es main el proceso coordinador???
+// TODO: crear una funcion coordinador
+int main(int argc, char *argv[])
 {
+    // TODO: utilizar parametros de entrada para generar N procesos generadores
+
+    // printf("Argumentos: ");
+    // for (int i = 0; i < argc; i++)
+    // {
+    //     printf("%s ", argv[i]);
+    // }
+    // printf("\n");
+
     srand(time(NULL));
     pthread_t threads[NUM_THREADS];
     int idx[NUM_THREADS];
