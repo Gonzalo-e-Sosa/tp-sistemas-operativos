@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <time.h>
 
-#define NUM_THREADS 1000                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
+#define NUM_THREADS 5                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
 #define TOTAL_RECORDS (NUM_THREADS * RECORDS_PER_THREAD) // TODO: a modificarse por parametro
 #define RECORDS_PER_THREAD 20                            // TODO: a modificarse ya que es una division entre los parametros de entrada (Total de registros / Cantidad de procesos)
 #define PRODUCT_NAME_COUNT 5
