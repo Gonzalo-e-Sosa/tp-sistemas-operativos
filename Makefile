@@ -1,11 +1,12 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -O2
+CFLAGS=-I./include -Wall -Wextra -O2
+SRC= main.c src/control_de_parametros.c
 TARGET=main
 
 all: $(TARGET)
 
-$(TARGET): main.c
-	$(CC) $(CFLAGS) -o $(TARGET) main.c
+$(TARGET): $(src)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
 
 clean:
 	rm -f $(TARGET)
