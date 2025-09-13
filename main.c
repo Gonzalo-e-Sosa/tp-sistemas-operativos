@@ -130,6 +130,12 @@ int main(int argc, char *argv[])
     printf("Configuración:\n");
     printf("  Generadores: %d\n", config.generadores);
     printf("  Registros: %d\n", config.registros);
+    printf("  Archivo salida: %s\n", config.archivo_salida ? config.archivo_salida : "(ninguno)");
+    
+    // Liberar memoria si se usó string
+    if (config.archivo_salida) {
+        free(config.archivo_salida);
+    }
     // srand(time(NULL));
     // pthread_t threads[NUM_THREADS];
     // int idx[NUM_THREADS];
