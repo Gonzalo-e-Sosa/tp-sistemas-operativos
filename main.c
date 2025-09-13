@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <time.h>
 
-#define NUM_THREADS 100                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
+#define NUM_THREADS 1000                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
 #define TOTAL_RECORDS (NUM_THREADS * RECORDS_PER_THREAD) // TODO: a modificarse por parametro
 #define RECORDS_PER_THREAD 20                            // TODO: a modificarse ya que es una division entre los parametros de entrada (Total de registros / Cantidad de procesos)
 #define PRODUCT_NAME_COUNT 5
@@ -117,6 +117,68 @@ void escribir_csv(const char *filename)
 
 // Es main el proceso coordinador???
 // TODO: crear una funcion coordinador
+
+#define HELP 100
+#define NUM_REGISTER 100
+typedef struct {
+    int generadores;
+    int registros;
+    char help;
+} Configuracion;
+
+void mostrar_ayuda(const char *nombre_programa) {
+    printf("Uso: %s [OPCIONES]\n", nombre_programa);
+    printf("Opciones:\n");
+    printf("  --generadores NUM   Número de generadores (default: 1)\n");
+    printf("  --registros NUM     Número de registros (default: 100)\n");
+    printf("  --help              Muestra esta ayuda\n");
+}
+
+char parsear_parametros(int argc, char *argv[], Configuracion *config) {
+    // Valores por defecto
+    config->generadores = NUM_THREADS;
+    config->registros = NUM_REGISTER;
+    config->help = 0;
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0) {
+            config->help = 1;
+            return 1;
+        }
+        else if (strcmp(argv[i], "--generadores") == 0) {
+            if (i + 1 < argc) {
+                config->generadores = atoi(argv[i + 1]);
+                if (config->generadores <= 0) {
+                    fprintf(stderr, "Error: --generadores debe ser un número positivo\n");
+                    return 0;
+                }
+                i++; // Saltar el siguiente argumento (el valor)
+            } else {
+                fprintf(stderr, "Error: --generadores requiere un valor\n");
+                return 0;
+            }
+        }
+        else if (strcmp(argv[i], "--registros") == 0) {
+            if (i + 1 < argc) {
+                config->registros = atoi(argv[i + 1]);
+                if (config->registros <= 0) {
+                    fprintf(stderr, "Error: --registros debe ser un número positivo\n");
+                    return 0;
+                }
+                i++; // Saltar el siguiente argumento (el valor)
+            } else {
+                fprintf(stderr, "Error: --registros requiere un valor\n");
+                return 0;
+            }
+        }
+        else {
+            fprintf(stderr, "Error: Opción desconocida '%s'\n", argv[i]);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int main(int argc, char *argv[])
 {
     // TODO: utilizar parametros de entrada para generar N procesos generadores
@@ -127,20 +189,27 @@ int main(int argc, char *argv[])
     //     printf("%s ", argv[i]);
     // }
     // printf("\n");
-
+    Configuracion config;
+    if(!parsear_parametros(argc, argv, &config) || config.help){
+        mostrar_ayuda(argv[0]);
+        return HELP;
+    }
+    printf("Configuración:\n");
+    printf("  Generadores: %d\n", config.generadores);
+    printf("  Registros: %d\n", config.registros);
     srand(time(NULL));
-    pthread_t threads[NUM_THREADS];
-    int idx[NUM_THREADS];
-    for (int i = 0; i < NUM_THREADS; ++i)
-    {
-        idx[i] = i;
-        pthread_create(&threads[i], NULL, generador, &idx[i]);
-    }
-    for (int i = 0; i < NUM_THREADS; ++i)
-    {
-        pthread_join(threads[i], NULL);
-    }
-    escribir_csv("mock_stock.csv");
-    printf("Generación de datos finalizada. Archivo: mock_stock.csv\n");
+    // pthread_t threads[NUM_THREADS];
+    // int idx[NUM_THREADS];
+    // for (int i = 0; i < NUM_THREADS; ++i)
+    // {
+    //     idx[i] = i;
+    //     pthread_create(&threads[i], NULL, generador, &idx[i]);
+    // }
+    // for (int i = 0; i < NUM_THREADS; ++i)
+    // {    
+    //     pthread_join(threads[i], NULL);
+    // }
+    // escribir_csv("mock_stock.csv");
+    // printf("Generación de datos finalizada. Archivo: mock_stock.csv\n");
     return 0;
 }
