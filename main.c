@@ -1,12 +1,10 @@
-#define _XOPEN_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <time.h>
 #include "control_de_parametros.h"
-
-#define NUM_THREADS 1000                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
+#include "utils.h"
+#define NUM_THREADS 5                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
 #define TOTAL_RECORDS (NUM_THREADS * RECORDS_PER_THREAD) // TODO: a modificarse por parametro
 #define RECORDS_PER_THREAD 20                            // TODO: a modificarse ya que es una division entre los parametros de entrada (Total de registros / Cantidad de procesos)
 #define PRODUCT_NAME_COUNT 5
@@ -14,17 +12,6 @@
 // TODO: a verse si se redondea la cantidad de registros a generar por cada proceso
 
 // TODO: definir si el proceso coordinador es o no un hilo
-
-typedef struct
-{
-    int id;
-    char codigo[8];
-    char nombre[64];
-    char lote[16];
-    char fecha_ingreso[11];
-    char fecha_vencimiento[11];
-    int cantidad;
-} Producto;
 
 const char *nombres[PRODUCT_NAME_COUNT] = {
     "Paracetamol 500mg",
@@ -36,40 +23,6 @@ const char *nombres[PRODUCT_NAME_COUNT] = {
 Producto productos[TOTAL_RECORDS];
 int next_id = 1;
 pthread_mutex_t id_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// Genera un string de lote aleatorio
-void generar_lote(char *dest, size_t len)
-{
-    const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    for (size_t i = 0; i < len - 1; ++i)
-    {
-        dest[i] = charset[rand() % (sizeof(charset) - 1)];
-    }
-    dest[len - 1] = '\0';
-}
-
-// Genera una fecha aleatoria entre dos fechas
-void generar_fecha(char *dest, const char *inicio, const char *fin)
-{
-    struct tm tm_ini = {0}, tm_fin = {0};
-    strptime(inicio, "%d-%m-%Y", &tm_ini);
-    strptime(fin, "%d-%m-%Y", &tm_fin);
-    time_t t_ini = mktime(&tm_ini);
-    time_t t_fin = mktime(&tm_fin);
-    time_t t_rand = t_ini + rand() % (t_fin - t_ini);
-    struct tm *tm_rand = localtime(&t_rand);
-    strftime(dest, 11, "%d-%m-%Y", tm_rand);
-}
-
-// Suma años a una fecha
-void sumar_anios(const char *fecha, int anos, char *dest)
-{
-    struct tm tm_fecha = {0};
-    strptime(fecha, "%d-%m-%Y", &tm_fecha);
-    tm_fecha.tm_year += anos;
-    mktime(&tm_fecha);
-    strftime(dest, 11, "%d-%m-%Y", &tm_fecha);
-}
 
 // TODO: A Modificarse IMPORTANTE
 void *generador(void *arg)
@@ -85,10 +38,10 @@ void *generador(void *arg)
         pthread_mutex_unlock(&id_mutex);
         snprintf(p->codigo, sizeof(p->codigo), "P%03d", p->id);
         strncpy(p->nombre, nombres[rand() % PRODUCT_NAME_COUNT], sizeof(p->nombre));
-        generar_lote(p->lote, 8);
-        generar_fecha(p->fecha_ingreso, "01-01-2024", "31-12-2025");
+        generar_lote(p->lote, MAX_CODIGO);
+        generar_fecha(p->fecha_ingreso, FECHA_INGRESO_MIN, FECHA_INGRESO_MAX);
         sumar_anios(p->fecha_ingreso, 1 + rand() % 3, p->fecha_vencimiento);
-        p->cantidad = 10 + rand() % 491;
+        p->cantidad = CANTIDAD_MIN + rand() % CANTIDAD_MAX;
     }
     return NULL;
 }
@@ -123,6 +76,7 @@ int main(int argc, char *argv[])
 {
     // utilizar parametros de entrada para generar N procesos generadores
     Configuracion config;
+    char* archivo_salida = NULL;
     if(!parsear_parametros(argc, argv, &config) || config.help){
         mostrar_ayuda(argv[0]);
         return HELP;
@@ -130,25 +84,28 @@ int main(int argc, char *argv[])
     printf("Configuración:\n");
     printf("  Generadores: %d\n", config.generadores);
     printf("  Registros: %d\n", config.registros);
-    printf("  Archivo salida: %s\n", config.archivo_salida ? config.archivo_salida : "(ninguno)");
+    archivo_salida = config.archivo_salida ? config.archivo_salida : DEFAULT_OUTPUT_FILE;
+    printf("  Archivo salida: %s\n", archivo_salida);
     
+    
+    srand(time(NULL));
+    pthread_t threads[NUM_THREADS];
+    int idx[NUM_THREADS];
+    for (int i = 0; i < NUM_THREADS; ++i)
+    {
+        idx[i] = i;
+        pthread_create(&threads[i], NULL, generador, &idx[i]);
+    }
+    for (int i = 0; i < NUM_THREADS; ++i)
+    {    
+        pthread_join(threads[i], NULL);
+    }
+    escribir_csv(archivo_salida);
+    printf("Generación de datos finalizada. Archivo: %s\n", archivo_salida);
+
     // Liberar memoria si se usó string
     if (config.archivo_salida) {
         free(config.archivo_salida);
     }
-    // srand(time(NULL));
-    // pthread_t threads[NUM_THREADS];
-    // int idx[NUM_THREADS];
-    // for (int i = 0; i < NUM_THREADS; ++i)
-    // {
-    //     idx[i] = i;
-    //     pthread_create(&threads[i], NULL, generador, &idx[i]);
-    // }
-    // for (int i = 0; i < NUM_THREADS; ++i)
-    // {    
-    //     pthread_join(threads[i], NULL);
-    // }
-    // escribir_csv("mock_stock.csv");
-    // printf("Generación de datos finalizada. Archivo: mock_stock.csv\n");
     return 0;
 }
