@@ -28,10 +28,19 @@ void *shm_create_and_map(const char *name, size_t size, int *fd_out)
 
 void shm_unmap_and_close(void *addr, size_t size, int fd, const char *name, int unlink_flag)
 {
-    munmap(addr, size);
-    close(fd);
+    if (munmap(addr, size) == -1)
+    {
+        perror("munmap");
+    }
+    if (close(fd) == -1)
+    {
+        perror("close");
+    }
     if (unlink_flag && name)
     {
-        shm_unlink(name);
+        if (shm_unlink(name) == -1)
+        {
+            perror("shm_unlink");
+        }
     }
 }
