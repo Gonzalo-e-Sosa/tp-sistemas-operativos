@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE
 #include "utils.h"
 
 void add_years(const char *date, int years, char *dest)

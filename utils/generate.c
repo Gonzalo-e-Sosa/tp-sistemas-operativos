@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE
 #include "utils.h"
 
 void generate_lote(char *dest, size_t len)
