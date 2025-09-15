@@ -1,11 +1,10 @@
 #define _XOPEN_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "utils/utils.h"
 #include <pthread.h>
-#include <time.h>
 
-#define NUM_THREADS 5                                 // TODO: utilizar parametros de entrada para generar N procesos generadores
+#define NUM_THREADS 5                                    // TODO: utilizar parametros de entrada para generar N procesos generadores
 #define TOTAL_RECORDS (NUM_THREADS * RECORDS_PER_THREAD) // TODO: a modificarse por parametro
 #define RECORDS_PER_THREAD 20                            // TODO: a modificarse ya que es una division entre los parametros de entrada (Total de registros / Cantidad de procesos)
 #define PRODUCT_NAME_COUNT 5
@@ -36,40 +35,6 @@ Producto productos[TOTAL_RECORDS];
 int next_id = 1;
 pthread_mutex_t id_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// Genera un string de lote aleatorio
-void generar_lote(char *dest, size_t len)
-{
-    const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    for (size_t i = 0; i < len - 1; ++i)
-    {
-        dest[i] = charset[rand() % (sizeof(charset) - 1)];
-    }
-    dest[len - 1] = '\0';
-}
-
-// Genera una fecha aleatoria entre dos fechas
-void generar_fecha(char *dest, const char *inicio, const char *fin)
-{
-    struct tm tm_ini = {0}, tm_fin = {0};
-    strptime(inicio, "%d-%m-%Y", &tm_ini);
-    strptime(fin, "%d-%m-%Y", &tm_fin);
-    time_t t_ini = mktime(&tm_ini);
-    time_t t_fin = mktime(&tm_fin);
-    time_t t_rand = t_ini + rand() % (t_fin - t_ini);
-    struct tm *tm_rand = localtime(&t_rand);
-    strftime(dest, 11, "%d-%m-%Y", tm_rand);
-}
-
-// Suma años a una fecha
-void sumar_anios(const char *fecha, int anos, char *dest)
-{
-    struct tm tm_fecha = {0};
-    strptime(fecha, "%d-%m-%Y", &tm_fecha);
-    tm_fecha.tm_year += anos;
-    mktime(&tm_fecha);
-    strftime(dest, 11, "%d-%m-%Y", &tm_fecha);
-}
-
 // TODO: A Modificarse IMPORTANTE
 void *generador(void *arg)
 {
@@ -84,35 +49,24 @@ void *generador(void *arg)
         pthread_mutex_unlock(&id_mutex);
         snprintf(p->codigo, sizeof(p->codigo), "P%03d", p->id);
         strncpy(p->nombre, nombres[rand() % PRODUCT_NAME_COUNT], sizeof(p->nombre));
-        generar_lote(p->lote, 8);
-        generar_fecha(p->fecha_ingreso, "01-01-2024", "31-12-2025");
-        sumar_anios(p->fecha_ingreso, 1 + rand() % 3, p->fecha_vencimiento);
+        generate_lote(p->lote, 8);
+        generate_date(p->fecha_ingreso, "01-01-2024", "31-12-2025");
+        add_years(p->fecha_ingreso, 1 + rand() % 3, p->fecha_vencimiento);
         p->cantidad = 10 + rand() % 491;
     }
     return NULL;
 }
 
-void escribir_csv(const char *filename)
+void print_producto(FILE *f, int i)
 {
-    FILE *f = fopen(filename, "w");
-    if (!f)
-    {
-        perror("fopen");
-        exit(1);
-    }
-    fprintf(f, "ID,Codigo,Descripcion,Lote,FechaIngreso,FechaVencimiento,Cantidad\n");
-    for (int i = 0; i < TOTAL_RECORDS; ++i)
-    {
-        fprintf(f, "%d,%s,%s,%s,%s,%s,%d\n",
-                productos[i].id,
-                productos[i].codigo,
-                productos[i].nombre,
-                productos[i].lote,
-                productos[i].fecha_ingreso,
-                productos[i].fecha_vencimiento,
-                productos[i].cantidad);
-    }
-    fclose(f);
+    fprintf(f, "%d,%s,%s,%s,%s,%s,%d\n",
+            productos[i].id,
+            productos[i].codigo,
+            productos[i].nombre,
+            productos[i].lote,
+            productos[i].fecha_ingreso,
+            productos[i].fecha_vencimiento,
+            productos[i].cantidad);
 }
 
 // Es main el proceso coordinador???
@@ -140,7 +94,13 @@ int main(int argc, char *argv[])
     {
         pthread_join(threads[i], NULL);
     }
-    escribir_csv("mock_stock.csv");
+
+    write_csv(
+        "mock_stock.csv",
+        "ID,Codigo,Descripcion,Lote,FechaIngreso,FechaVencimiento,Cantidad",
+        print_producto,
+        TOTAL_RECORDS);
+
     printf("Generación de datos finalizada. Archivo: mock_stock.csv\n");
     return 0;
 }
