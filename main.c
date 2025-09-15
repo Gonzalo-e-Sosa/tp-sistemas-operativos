@@ -5,6 +5,7 @@
 #define DEFAULT_TOTAL_RECORDS 100
 
 #define SHM_NAME "/shm_productos_tp"
+#define SHM_UNLINK 1
 
 int NUM_THREADS = DEFAULT_NUM_THREADS;
 int TOTAL_RECORDS = DEFAULT_TOTAL_RECORDS;
@@ -169,7 +170,7 @@ int main(int argc, char *argv[])
 
     coordinador_escribir_csv("mock_stock.csv", thread_data);
 
-    shm_unmap_and_close(shm_base, shm_size, shm_fd, SHM_NAME, 1);
+    shm_unmap_and_close(shm_base, shm_size, shm_fd, SHM_NAME, SHM_UNLINK);
 
     printf("Generación de datos finalizada. Archivo: mock_stock.csv\n");
     return 0;
