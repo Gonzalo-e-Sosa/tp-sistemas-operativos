@@ -127,15 +127,21 @@ int main(int argc, char *argv[])
     // Uso: ./main [num_generadores] [total_registros]
     if (argc > 1)
     {
-        NUM_THREADS = atoi(argv[1]);
-        if (NUM_THREADS <= 0)
+        char *endptr = NULL;
+        long val = strtol(argv[1], &endptr, 10);
+        if (endptr == argv[1] || *endptr != '\0' || val <= 0)
             NUM_THREADS = DEFAULT_NUM_THREADS;
+        else
+            NUM_THREADS = (int)val;
     }
     if (argc > 2)
     {
-        TOTAL_RECORDS = atoi(argv[2]);
-        if (TOTAL_RECORDS <= 0)
+        char *endptr = NULL;
+        long val = strtol(argv[2], &endptr, 10);
+        if (endptr == argv[2] || *endptr != '\0' || val <= 0)
             TOTAL_RECORDS = DEFAULT_TOTAL_RECORDS;
+        else
+            TOTAL_RECORDS = (int)val;
     }
     RECORDS_PER_THREAD = (TOTAL_RECORDS + NUM_THREADS - 1) / NUM_THREADS; // redondea hacia arriba
     TOTAL_RECORDS = RECORDS_PER_THREAD * NUM_THREADS;                     // asegura múltiplo
