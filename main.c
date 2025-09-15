@@ -4,6 +4,8 @@
 #define DEFAULT_NUM_THREADS 5
 #define DEFAULT_TOTAL_RECORDS 100
 
+#define SHM_NAME "/shm_productos_tp"
+
 int NUM_THREADS = DEFAULT_NUM_THREADS;
 int TOTAL_RECORDS = DEFAULT_TOTAL_RECORDS;
 int RECORDS_PER_THREAD = 20;
@@ -32,9 +34,43 @@ typedef struct
     Producto *productos;
     int cantidad;
     int thread_idx;
+    Producto *shm_base; // puntero base a la SHM
+    int shm_offset;     // offset de inicio en la SHM
 } ThreadData;
+
+// Control de IDs
 int next_id = 1;
 pthread_mutex_t id_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Función para obtener el próximo ID (fácil de migrar a SHM)
+int obtener_id()
+{
+    pthread_mutex_lock(&id_mutex);
+    int id = next_id++;
+    pthread_mutex_unlock(&id_mutex);
+    return id;
+}
+
+// Genera un producto con datos aleatorios y un ID válido
+Producto generar_producto()
+{
+    Producto prod;
+    prod.id = obtener_id();
+    snprintf(prod.codigo, sizeof(prod.codigo), "P%03d", prod.id);
+    strncpy(prod.nombre, nombres[rand() % PRODUCT_NAME_COUNT], sizeof(prod.nombre) - 1);
+    prod.nombre[sizeof(prod.nombre) - 1] = '\0';
+    generate_lote(prod.lote, 8);
+    generate_date(prod.fecha_ingreso, "01-01-2024", "31-12-2025");
+    add_years(prod.fecha_ingreso, 1 + rand() % 3, prod.fecha_vencimiento);
+    prod.cantidad = 10 + rand() % 491;
+    return prod;
+}
+
+// Simula el envío de un producto (fácil de migrar a SHM)
+void enviar_producto(Producto *dest, Producto prod)
+{
+    *dest = prod;
+}
 
 void *generador(void *arg)
 {
@@ -47,17 +83,8 @@ void *generador(void *arg)
     }
     for (int i = 0; i < data->cantidad; ++i)
     {
-        Producto *p = &data->productos[i];
-        pthread_mutex_lock(&id_mutex);
-        p->id = next_id++;
-        pthread_mutex_unlock(&id_mutex);
-        snprintf(p->codigo, sizeof(p->codigo), "P%03d", p->id);
-        strncpy(p->nombre, nombres[rand() % PRODUCT_NAME_COUNT], sizeof(p->nombre) - 1);
-        p->nombre[sizeof(p->nombre) - 1] = '\0';
-        generate_lote(p->lote, 8);
-        generate_date(p->fecha_ingreso, "01-01-2024", "31-12-2025");
-        add_years(p->fecha_ingreso, 1 + rand() % 3, p->fecha_vencimiento);
-        p->cantidad = 10 + rand() % 491;
+        Producto prod = generar_producto();
+        enviar_producto(&data->productos[i], prod);
     }
     pthread_exit(NULL);
 }
@@ -74,7 +101,8 @@ void print_producto(FILE *f, const Producto *p)
             p->cantidad);
 }
 
-void escribir_csv(const char *filename, ThreadData *thread_data)
+// Simula la recepción y escritura de productos (fácil de migrar a SHM)
+void coordinador_escribir_csv(const char *filename, ThreadData *thread_data)
 {
     FILE *f = fopen(filename, "w");
     if (!f)
@@ -94,8 +122,6 @@ void escribir_csv(const char *filename, ThreadData *thread_data)
     fclose(f);
 }
 
-// Es main el proceso coordinador???
-// TODO: crear una funcion coordinador
 int main(int argc, char *argv[])
 {
     // Uso: ./main [num_generadores] [total_registros]
@@ -114,6 +140,10 @@ int main(int argc, char *argv[])
     RECORDS_PER_THREAD = (TOTAL_RECORDS + NUM_THREADS - 1) / NUM_THREADS; // redondea hacia arriba
     TOTAL_RECORDS = RECORDS_PER_THREAD * NUM_THREADS;                     // asegura múltiplo
 
+    int shm_fd;
+    size_t shm_size = sizeof(Producto) * TOTAL_RECORDS;
+    Producto *shm_base = shm_create_and_map(SHM_NAME, shm_size, &shm_fd);
+
     srand(time(NULL));
     pthread_t threads[NUM_THREADS];
     ThreadData thread_data[NUM_THREADS];
@@ -122,7 +152,8 @@ int main(int argc, char *argv[])
     {
         thread_data[i].cantidad = RECORDS_PER_THREAD;
         thread_data[i].thread_idx = i;
-        thread_data[i].productos = NULL;
+        thread_data[i].shm_base = shm_base;
+        thread_data[i].shm_offset = i * RECORDS_PER_THREAD;
         pthread_create(&threads[i], NULL, generador, &thread_data[i]);
     }
     for (int i = 0; i < NUM_THREADS; ++i)
@@ -130,7 +161,9 @@ int main(int argc, char *argv[])
         pthread_join(threads[i], NULL);
     }
 
-    escribir_csv("mock_stock.csv", thread_data);
+    coordinador_escribir_csv("mock_stock.csv", thread_data);
+
+    shm_unmap_and_close(shm_base, shm_size, shm_fd, SHM_NAME, 1);
 
     printf("Generación de datos finalizada. Archivo: mock_stock.csv\n");
     return 0;
