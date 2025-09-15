@@ -1,12 +1,8 @@
 
-[] Línea 6: utilizar parametros de entrada para generar N procesos generadores
-[] Línea 7: a modificarse por parametro (TOTAL_RECORDS)
-[] Línea 8: a modificarse ya que es una division entre los parametros de entrada (Total de registros / Cantidad de procesos)
-[] Línea 11: a verse si se redondea la cantidad de registros a generar por cada proceso
-[] Línea 13: definir si el proceso coordinador es o no un hilo
-[] Línea 49: a modificarse para que el id sea generador por el proceso coordinador y NO por INDICE
-[] Línea 68: A Modificarse IMPORTANTE
-[] Línea 109: Es main el proceso coordinador???
-[] Línea 110: crear una funcion coordinador
-[] Línea 114: utilizar parametros de entrada para generar N procesos generadores
-[] Encontrar la forma de linkear todos los programa objeto "*.o" de la carpeta build y no linkearlos uno a uno como se hace ahora
+[] Implementar memoria compartida (SHM) para comunicación entre generadores y coordinador
+[] Hacer que los generadores soliciten bloques de 10 IDs al coordinador (no uno a uno)
+[] El coordinador debe recibir registros por SHM y escribirlos en el CSV a medida que llegan
+[] Sincronizar el acceso a SHM y la entrega de IDs usando semáforos
+[] Definir claramente el rol del proceso coordinador (puede ser main o un hilo/proceso separado)
+[] Validar que no haya condiciones de carrera ni pérdida de registros
+[] (Opcional) Mejorar robustez ante errores de SHM/semaforización
