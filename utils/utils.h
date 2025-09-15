@@ -6,10 +6,6 @@
 #include <string.h>
 #include <time.h>
 
-// Escribe datos en un archivo CSV
-void write_csv(const char *filename, const char *header,
-               void (*print_row)(FILE *, int), int limit);
-
 // Suma años a una fecha
 void add_years(const char *date, int years, char *dest);
 
