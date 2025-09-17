@@ -38,7 +38,7 @@ void *generador(void *arg)
         pthread_mutex_unlock(&id_mutex);
         snprintf(p->codigo, sizeof(p->codigo), "P%03d", p->id);
         strncpy(p->nombre, nombres[rand() % PRODUCT_NAME_COUNT], sizeof(p->nombre));
-        generar_lote(p->lote, MAX_CODIGO);
+        generar_lote(p->lote, MAX_LOTE);
         generar_fecha(p->fecha_ingreso, FECHA_INGRESO_MIN, FECHA_INGRESO_MAX);
         sumar_anios(p->fecha_ingreso, 1 + rand() % 3, p->fecha_vencimiento);
         p->cantidad = CANTIDAD_MIN + rand() % CANTIDAD_MAX;
