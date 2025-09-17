@@ -5,7 +5,7 @@ TARGET=main
 
 all: $(TARGET)
 
-$(TARGET): $(src)
+$(TARGET): $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
 
 clean:
