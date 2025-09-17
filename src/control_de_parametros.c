@@ -57,7 +57,7 @@ char procesar_valor(Parametro *param, const char *valor) {
     }
     else if (strcmp(param->tipo, "string") == 0) {
         char **var_str = (char**)param->variable;
-        *var_str = strdup(valor); // Necesitarías free() luego
+        *var_str = strdup(valor); // Requires free() later
     }
     else if (strcmp(param->tipo, "bool") == 0) {
         char *var_bool = (char*)param->variable;
