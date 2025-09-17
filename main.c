@@ -41,7 +41,7 @@ void *generador(void *arg)
         generar_lote(p->lote, MAX_LOTE);
         generar_fecha(p->fecha_ingreso, FECHA_INGRESO_MIN, FECHA_INGRESO_MAX);
         sumar_anios(p->fecha_ingreso, 1 + rand() % 3, p->fecha_vencimiento);
-        p->cantidad = CANTIDAD_MIN + rand() % CANTIDAD_MAX;
+        p->cantidad = CANTIDAD_MIN + rand() % (CANTIDAD_MAX - CANTIDAD_MIN + 1);
     }
     return NULL;
 }
