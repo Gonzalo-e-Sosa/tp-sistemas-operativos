@@ -3,13 +3,13 @@
 Parametro parametros[] = {
     {"--generadores", "Número de generadores (default: 1)", NULL, "int", 0},
     {"--registros",   "Número de registros (default: 100)", NULL, "int", 0},
-    {"--output",      "Archivo de salida (default: registros.txt)", NULL, "string", 0},
+    {"--output",      "Archivo de salida", NULL, "string", 0},
     {"--help",        "Mostrar ayuda", NULL, "bool", 0},
     {NULL, NULL, NULL, NULL, 0} // Marcador de fin
 };
 
 void mostrar_ayuda(const char *nombre_programa) {
-    printf("Uso: %s [OPCIONES]\n", nombre_programa);
+    printf("Uso: %s [OPCIONES] (NUM)\n", nombre_programa);
     printf("Opciones:\n");
     
     for (int i = 0; parametros[i].nombre != NULL; i++) {

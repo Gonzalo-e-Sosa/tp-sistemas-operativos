@@ -10,7 +10,7 @@
 #define NUM_REGISTER 100
 #define NUM_GENERATOR 5
 
-#define DEFAULT_OUTPUT_FILE "registros.txt"
+#define DEFAULT_OUTPUT_FILE "mock_stock.csv"
 // Estructura para definir cada parámetro
 typedef struct {
     const char *nombre;      // Nombre del parámetro (ej: "--generadores")

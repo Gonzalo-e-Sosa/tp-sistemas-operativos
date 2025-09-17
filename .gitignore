@@ -1,3 +1,5 @@
 /.vscode
 /main
 /mock_stock.csv
+/build
+*.d

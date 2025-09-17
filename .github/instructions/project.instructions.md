@@ -15,6 +15,7 @@ applyTo: '**'
    - Se debe entregar **código fuente + Makefile** que compile sin errores ni warnings.
    - No se aceptan binarios precompilados.
    - Utilizar **memoria compartida (SHM)**, **semaforización** y **sockets TCP/IP** donde corresponda.
+   - Utiliza **POSIX** para sincronización.
    - Implementar manejo controlado de errores y validación de parámetros de entrada.
    - Liberar siempre los recursos del sistema (memoria compartida, semáforos, archivos temporales, sockets).
    - El CSV debe contener en la primera fila el encabezado de columnas, siendo **ID** el primer campo obligatorio.
