@@ -1,21 +1,38 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -O2
-TARGET=main
-BUILD_DIR=build
-UTILS_SRCS=$(wildcard utils/*.c)
-UTILS_OBJS=$(patsubst utils/%.c,$(BUILD_DIR)/%.o,$(UTILS_SRCS))
+CC = gcc
+CFLAGS = -Iinclude -Wall -Wextra -O2 -MMD -MP
 
+# Directorios
+SRC_DIR = src
+BUILD_DIR = build
+TARGET = main
+
+# Archivos fuente y objetos
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
+MAIN = main.c
+
+# Archivos de dependencias generados por -MMD
+DEPS = $(OBJS:.o=.d)
+
+# Regla por defecto
 all: $(TARGET)
 
-$(TARGET): main.c $(UTILS_OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) main.c $(UTILS_OBJS)
+# Enlazado final
+$(TARGET): $(MAIN) $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(BUILD_DIR)/%.o: utils/%.c utils/utils.h | $(BUILD_DIR)
+# Compilación de .c a .o con generación de dependencias
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Crear build si no existe
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+# Limpieza
 clean:
-	rm -f $(TARGET) $(UTILS_OBJS)
+	rm -f $(TARGET)
 	rm -rf $(BUILD_DIR)
+
+# Incluir dependencias auto-generadas
+-include $(DEPS)
