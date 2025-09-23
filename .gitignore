@@ -2,3 +2,5 @@
 /main
 /mock_stock.csv
 /build
+/lib/obj
+/lib/*.a
