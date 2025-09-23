@@ -20,6 +20,21 @@ void generate_date(char *dest, const char *start, const char *end);
 // Genera un lote aleatorio
 void generate_lote(char *dest, size_t len);
 
+// Stock
+
+typedef struct
+{
+    int id;
+    char codigo[8];
+    char nombre[64];
+    char lote[16];
+    char fecha_ingreso[11];     // dd-mm-yyyy
+    char fecha_vencimiento[11]; // dd-mm-yyyy
+    int cantidad;
+} Producto;
+
+Producto generar_producto();
+
 // POSIX
 
 // Crea o abre una SHM POSIX y la mapea en memoria
