@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "utils.h"
 
 void *shm_create_and_map(const char *name, size_t size, int *fd_out)
@@ -25,7 +26,16 @@ void *shm_create_and_map(const char *name, size_t size, int *fd_out)
         *fd_out = fd;
     return addr;
 }
-
+void inicializarMemoriaCompartida(void){
+    // Inicializar SHM
+    shm_base->in = 0;
+    shm_base->out = 0;
+    shm_base->count = 0;
+    shm_base->pedido_ids = 0;
+    shm_base->id_desde = -1;
+    shm_base->id_hasta = -1;
+    shm_base->se_completo = 0;
+}
 void shm_unmap_and_close(void *addr, size_t size, int fd, const char *name, int unlink_flag)
 {
     if (munmap(addr, size) == -1)

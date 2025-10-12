@@ -4,6 +4,7 @@ Parametro parametros[] = {
     {"--generadores", "Número de generadores (default: 1)", NULL, "int", 0},
     {"--registros",   "Número de registros (default: 100)", NULL, "int", 0},
     {"--output",      "Archivo de salida", NULL, "string", 0},
+    {"--verbose",   "Modo detallado", NULL, "bool", 0},
     {"--help",        "Mostrar ayuda", NULL, "bool", 0},
     {NULL, NULL, NULL, NULL, 0} // Marcador de fin
 };
@@ -28,6 +29,9 @@ void inicializar_parametros(Configuracion *config) {
         }
         else if (strcmp(parametros[i].nombre, "--output") == 0) {
             parametros[i].variable = &config->archivo_salida;
+        }
+        else if (strcmp(parametros[i].nombre, "--verbose") == 0) {
+            parametros[i].variable = &config->verbose;
         }
         else if (strcmp(parametros[i].nombre, "--help") == 0) {
             parametros[i].variable = &config->help;
@@ -71,6 +75,7 @@ char parsear_parametros(int argc, char *argv[], Configuracion *config) {
     config->generadores = NUM_GENERATOR;
     config->registros = NUM_REGISTER;
     config->archivo_salida = NULL;
+    config->verbose = 0;
     config->help = 0;
     
     // Inicializar punteros

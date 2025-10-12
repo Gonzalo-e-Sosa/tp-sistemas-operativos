@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Iinclude -Wall -Wextra -O2 -MMD -MP
+CFLAGS = -Iinclude -Wall -Wextra -O2 -MMD -MP -lpthread
 
 # Directorios
 SRC_DIR = src
