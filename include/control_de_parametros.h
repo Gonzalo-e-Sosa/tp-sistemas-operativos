@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 #define HELP 100
-#define NUM_REGISTER 100
-#define NUM_GENERATOR 5
+#define NUM_REGISTER 23
+#define NUM_GENERATOR 2
 
 #define DEFAULT_OUTPUT_FILE "mock_stock.csv"
 // Estructura para definir cada parámetro
@@ -25,6 +25,7 @@ typedef struct {
     int generadores;
     int registros;
     char *archivo_salida;
+    char verbose;
     char help;
 } Configuracion;
 
